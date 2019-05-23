@@ -5,8 +5,11 @@
 ## scrape.php
 A PHP script to gather Indian election results by constituency written on May 23, 2019, as results came out. This will generate results.tsv.
 
-## constituencies.json
-A GeoJSON shape file containing India's parliamentary constituencies.
+## results.tsv
+A tab-separated values file containing results data.
 
 ## results.html, margins.html
 D3 maps showing results.
+
+## constituencies.json
+A GeoJSON shape file containing India's parliamentary constituencies.
