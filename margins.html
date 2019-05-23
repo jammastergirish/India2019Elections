@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<!-- http://datawanderings.com/2018/10/28/making-a-map-in-d3-js-v-5/ -->
+<head>
+<meta charset="UTF-8">
+<title>Map</title>
+<script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+
+<body>
+
+<script>
+
+const svg = d3.select("body")
+    .append("svg")
+    .attr("width", 800) //window.innerWidth
+    .attr("height", 600)
+
+const projection = d3.geoEquirectangular()
+    .center([79, 21])     
+    .scale(1000)   
+    .translate([800/2, 600/2])
+    
+const path = d3.geoPath().projection(projection);
+       
+let map = d3.json("constituencies.json");
+const data = d3.tsv("results.tsv"); 
+
+Promise.all([map, data]).then( 
+    values => // 
+        {    
+            const colorScale = d3.scaleLinear() // Color Scale for our data
+                .domain([50,10000]) // Let's make this dynamic by getting the min/max of the variable automatically.
+                .range(d3.schemeReds[3]);
+
+            const LookupLeadingParty = {};
+            values[1].forEach(item => LookupLeadingParty[item['ConstituencyName'].TitleCase().replace("Thiruvallur", "Tiruvallur").replace("Mumbai   South", "Mumbai South").replace("Maldaha Dakshin", "Maldaha").replace("Sarguja", "Surguja").replace("0dyal", "Nandyal").replace("Nowgong", "Nawgong").replace("Barrackpore", "Barrackpur").replace("Srerampur", "Sreerampur").replace("Ratnagiri - Sindhudurg", "Ratnagiri & Sindhudurg").replace("Joynagar", "Jaynagar").replace("Jamnagar", "Jamnagar").replace("Burdwan - Durgapur", "Bardhaman-Durgapur").replace("0ded", "Nanded").replace("Arambagh", "Arambag").replace("0durbar", "Nandurbar").replace("Dadar & Nagar Haveli", "Dadra & Nagar Haveli").replace("Mumbai North West", "Mumbai North-West").replace("Mumbai North East", "Mumbai North-East").replace("Mumbai North Central", "Mumbai North-Central").replace("Mumbai South Central", "Mumbai South-Central").replace("Ahmadnagar", "Ahmednagar").replace("Udupi Chikmagalur", "Udupi").replace("0", "nan").replace("Secundrabad", "Secunderabad").replace("Chelvella", "Chevella").replace("Aruku", "Araku").replace("Anakapalli", "Anakapalle").replace("Tonk-Sawai Madhopur", "Tonk-Sawai").replace("Tonk-Sawai", "Tonk-Sawai").replace("Nainital-Udhamsingh Nagar", "Nainital-Udham Singh Nagar").replace("Ratnagiri - Sindhudurg", "Ratnagiriâ€“Sindhudurg").replace("Bhandara - Gondiya", "Bhandara-Gondiya").replace("Cooch Behar", "Coochbehar").replace("Palamau", "Palamu").replace(" (Sc)", "").trim()] = item['LeadingParty'].replace("Shivsena", "Bharatiya Janata Party").replace("Janata Dal  (United)", "Bharatiya Janata Party").replace("Lok Jan Shakti Party", "Bharatiya Janata Party").replace("All India Anna Dravida Munnetra Kazhagam", "Bharatiya Janata Party").replace("Apna Dal", "Bharatiya Janata Party").replace("Apna Dal (Soneylal)", "Bharatiya Janata Party").replace("Asom Gana Parishad", "Bharatiya Janata Party").replace("AJSU Party", "Bharatiya Janata Party").replace("Shiromani Akali Dal", "Bharatiya Janata Party").replace("Pattali Makkal Katchi", "Bharatiya Janata Party").replace("Rashtriya Loktantrik Party", "Bharatiya Janata Party").replace("Kerala Congress  (M)", "Bharatiya Janata Party").replace("Nationalist Democratic Progressive Party", "Bharatiya Janata Party").replace("Tamil Maanila Congress  (Moopanar)", "Bharatiya Janata Party").replace("Desiya Murpokku Dravida Kazhagam", "Bharatiya Janata Party").replace("Bodoland Peoples Front", "Bharatiya Janata Party").replace("All India N.R. Congress", "Bharatiya Janata Party").replace("Dravida Munnetra Kazhagam", "Indian National Congress").replace("Nationalist Congress Party", "Indian National Congress").replace("Indian Union Muslim League", "Indian National Congress").replace("Jammu & Kashmir National Conference", "Indian National Congress").replace("Jharkhand Mukti Morcha", "Indian National Congress").replace("Rashtriya Janata Dal", "Indian National Congress").replace("Janata Dal  (Secular)", "Indian National Congress").replace("Communist Party of India  (Marxist-Leninist)  (Liberation)", "Indian National Congress").replace("Hindustani Awam Morcha (Secular)", "Indian National Congress").replace("Bahujan Vikas Aaghadi", "Indian National Congress").replace("Viduthalai Chiruthaigal Katchi", "Indian National Congress").replace("Rashtriya Lok Samta Party", "Indian National Congress").replace("Jharkhand Vikas Morcha (Prajatantrik)", "Indian National Congress").replace("Revolutionary Socialist Party", "Indian National Congress") );
+            LookupLeadingParty["Jammu & Kashmir"] = 0;
+
+            const LookupLeadingCandidate = {};
+            values[1].forEach(item => LookupLeadingCandidate[item['ConstituencyName'].TitleCase().replace("Thiruvallur", "Tiruvallur").replace("Mumbai   South", "Mumbai South").replace("Maldaha Dakshin", "Maldaha").replace("Sarguja", "Surguja").replace("0dyal", "Nandyal").replace("Nowgong", "Nawgong").replace("Barrackpore", "Barrackpur").replace("Srerampur", "Sreerampur").replace("Ratnagiri - Sindhudurg", "Ratnagiri & Sindhudurg").replace("Joynagar", "Jaynagar").replace("Jamnagar", "Jamnagar").replace("Burdwan - Durgapur", "Bardhaman-Durgapur").replace("0ded", "Nanded").replace("Arambagh", "Arambag").replace("0durbar", "Nandurbar").replace("Dadar & Nagar Haveli", "Dadra & Nagar Haveli").replace("Mumbai North West", "Mumbai North-West").replace("Mumbai North East", "Mumbai North-East").replace("Mumbai North Central", "Mumbai North-Central").replace("Mumbai South Central", "Mumbai South-Central").replace("Ahmadnagar", "Ahmednagar").replace("Udupi Chikmagalur", "Udupi").replace("0", "nan").replace("Secundrabad", "Secunderabad").replace("Chelvella", "Chevella").replace("Aruku", "Araku").replace("Anakapalli", "Anakapalle").replace("Tonk-Sawai Madhopur", "Tonk-Sawai").replace("Tonk-Sawai", "Tonk-Sawai").replace("Nainital-Udhamsingh Nagar", "Nainital-Udham Singh Nagar").replace("Ratnagiri - Sindhudurg", "Ratnagiriâ€“Sindhudurg").replace("Bhandara - Gondiya", "Bhandara-Gondiya").replace("Cooch Behar", "Coochbehar").replace("Palamau", "Palamu").replace(" (Sc)", "").trim()] = item['LeadingCandidate'] );
+            
+            const LookupTrailingCandidate = {};
+            values[1].forEach(item => LookupTrailingCandidate[item['ConstituencyName'].TitleCase().replace("Thiruvallur", "Tiruvallur").replace("Mumbai   South", "Mumbai South").replace("Maldaha Dakshin", "Maldaha").replace("Sarguja", "Surguja").replace("0dyal", "Nandyal").replace("Nowgong", "Nawgong").replace("Barrackpore", "Barrackpur").replace("Srerampur", "Sreerampur").replace("Ratnagiri - Sindhudurg", "Ratnagiri & Sindhudurg").replace("Joynagar", "Jaynagar").replace("Jamnagar", "Jamnagar").replace("Burdwan - Durgapur", "Bardhaman-Durgapur").replace("0ded", "Nanded").replace("Arambagh", "Arambag").replace("0durbar", "Nandurbar").replace("Dadar & Nagar Haveli", "Dadra & Nagar Haveli").replace("Mumbai North West", "Mumbai North-West").replace("Mumbai North East", "Mumbai North-East").replace("Mumbai North Central", "Mumbai North-Central").replace("Mumbai South Central", "Mumbai South-Central").replace("Ahmadnagar", "Ahmednagar").replace("Udupi Chikmagalur", "Udupi").replace("0", "nan").replace("Secundrabad", "Secunderabad").replace("Chelvella", "Chevella").replace("Aruku", "Araku").replace("Anakapalli", "Anakapalle").replace("Tonk-Sawai Madhopur", "Tonk-Sawai").replace("Tonk-Sawai", "Tonk-Sawai").replace("Nainital-Udhamsingh Nagar", "Nainital-Udham Singh Nagar").replace("Ratnagiri - Sindhudurg", "Ratnagiriâ€“Sindhudurg").replace("Bhandara - Gondiya", "Bhandara-Gondiya").replace("Cooch Behar", "Coochbehar").replace("Palamau", "Palamu").replace(" (Sc)", "").trim()] = item['TrailingCandidate'] );
+            
+            const LookupTrailingParty = {};
+            values[1].forEach(item => LookupTrailingParty[item['ConstituencyName'].TitleCase().replace("Thiruvallur", "Tiruvallur").replace("Mumbai   South", "Mumbai South").replace("Maldaha Dakshin", "Maldaha").replace("Sarguja", "Surguja").replace("0dyal", "Nandyal").replace("Nowgong", "Nawgong").replace("Barrackpore", "Barrackpur").replace("Srerampur", "Sreerampur").replace("Ratnagiri - Sindhudurg", "Ratnagiri & Sindhudurg").replace("Joynagar", "Jaynagar").replace("Jamnagar", "Jamnagar").replace("Burdwan - Durgapur", "Bardhaman-Durgapur").replace("0ded", "Nanded").replace("Arambagh", "Arambag").replace("0durbar", "Nandurbar").replace("Dadar & Nagar Haveli", "Dadra & Nagar Haveli").replace("Mumbai North West", "Mumbai North-West").replace("Mumbai North East", "Mumbai North-East").replace("Mumbai North Central", "Mumbai North-Central").replace("Mumbai South Central", "Mumbai South-Central").replace("Ahmadnagar", "Ahmednagar").replace("Udupi Chikmagalur", "Udupi").replace("0", "nan").replace("Secundrabad", "Secunderabad").replace("Chelvella", "Chevella").replace("Aruku", "Araku").replace("Anakapalli", "Anakapalle").replace("Tonk-Sawai Madhopur", "Tonk-Sawai").replace("Tonk-Sawai", "Tonk-Sawai").replace("Nainital-Udhamsingh Nagar", "Nainital-Udham Singh Nagar").replace("Ratnagiri - Sindhudurg", "Ratnagiriâ€“Sindhudurg").replace("Bhandara - Gondiya", "Bhandara-Gondiya").replace("Cooch Behar", "Coochbehar").replace("Palamau", "Palamu").replace(" (Sc)", "").trim()] = item['TrailingParty'] );
+            
+            const LookupMargin = {};
+            values[1].forEach(item => LookupMargin[item['ConstituencyName'].TitleCase().replace("Thiruvallur", "Tiruvallur").replace("Mumbai   South", "Mumbai South").replace("Maldaha Dakshin", "Maldaha").replace("Sarguja", "Surguja").replace("0dyal", "Nandyal").replace("Nowgong", "Nawgong").replace("Barrackpore", "Barrackpur").replace("Srerampur", "Sreerampur").replace("Ratnagiri - Sindhudurg", "Ratnagiri & Sindhudurg").replace("Joynagar", "Jaynagar").replace("Jamnagar", "Jamnagar").replace("Burdwan - Durgapur", "Bardhaman-Durgapur").replace("0ded", "Nanded").replace("Arambagh", "Arambag").replace("0durbar", "Nandurbar").replace("Dadar & Nagar Haveli", "Dadra & Nagar Haveli").replace("Mumbai North West", "Mumbai North-West").replace("Mumbai North East", "Mumbai North-East").replace("Mumbai North Central", "Mumbai North-Central").replace("Mumbai South Central", "Mumbai South-Central").replace("Ahmadnagar", "Ahmednagar").replace("Udupi Chikmagalur", "Udupi").replace("0", "nan").replace("Secundrabad", "Secunderabad").replace("Chelvella", "Chevella").replace("Aruku", "Araku").replace("Anakapalli", "Anakapalle").replace("Tonk-Sawai Madhopur", "Tonk-Sawai").replace("Tonk-Sawai", "Tonk-Sawai").replace("Nainital-Udhamsingh Nagar", "Nainital-Udham Singh Nagar").replace("Ratnagiri - Sindhudurg", "Ratnagiriâ€“Sindhudurg").replace("Bhandara - Gondiya", "Bhandara-Gondiya").replace("Cooch Behar", "Coochbehar").replace("Palamau", "Palamu").replace(" (Sc)", "").trim()] = item['Margin'] );
+            
+            svg.selectAll("path")
+                .data(values[0].features)
+                .enter()
+                .append("path")
+                .attr("d", path)
+                .style("stroke","green")
+                .style("stroke-opacity", 0.2)
+                .style("fill", "white")
+                .style("fill", d => { return colorScale(LookupMargin[d.properties.pc_name]);}  )
+                .attr("id", (d, i) => "state" + i ) 
+                .on("mouseover", (d, i) => {
+                  d3.select("#state" + i).style("stroke-opacity", 1); 
+                  d3.select("#ConstituencyNameText").text(d.properties.pc_name);
+                  d3.select("#LeadingCandidateText").text(LookupLeadingCandidate[d.properties.pc_name]);
+                  d3.select("#LeadingPartyText").text(LookupLeadingParty[d.properties.pc_name]);
+                  d3.select("#LeadingCandidateTitleText").text("Leading Candidate:");
+                  d3.select("#TrailingCandidateTitleText").text("Trailing Candidate:");
+                  d3.select("#TrailingCandidateText").text(LookupTrailingCandidate[d.properties.pc_name]);
+                  d3.select("#TrailingPartyText").text(LookupTrailingParty[d.properties.pc_name]);
+                  d3.select("#MarginText").text(addCommas(LookupMargin[d.properties.pc_name]));
+                  d3.select("#MarginTitleText").text("Margin:");
+                })
+                .on("mouseout", (d, i) => {d3.select("#state" + i).style("stroke-opacity", 0.2);
+                  d3.select("#ConstituencyNameText").text("");
+                  d3.select("#LeadingCandidateText").text("");
+                  d3.select("#LeadingPartyText").text("");
+                  d3.select("#LeadingCandidateTitleText").text("");
+                  d3.select("#TrailingCandidateTitleText").text("");
+                  d3.select("#TrailingCandidateText").text("");
+                  d3.select("#TrailingPartyText").text("");
+                  d3.select("#MarginText").text("");
+                  d3.select("#MarginTitleText").text("");
+                });
+
+            // svg.append("text")
+            //     .text("Map of 2019 winning parties")
+            //     .attr("x", 40)
+            //     .attr("y", 90)
+            //     .style("font-family", "Georgia")
+            //     .style("font-size", "20px");
+            svg.append("text")
+                .attr("id", (d) => "ConstituencyNameText" ) 
+                .attr("x", 15)
+                .attr("y", 50)
+                .style("font-family", "Georgia")
+                .style("font-weight", "bold")
+                .style("font-size", "20px");
+            svg.append("text")
+                .attr("id", (d) => "LeadingCandidateTitleText" ) 
+                .attr("x", 20)
+                .attr("y", 80)
+                .style("font-family", "Georgia")
+                .style("font-size", "12px");
+            svg.append("text")
+                .attr("id", (d) => "LeadingCandidateText" ) 
+                .attr("x", 25)
+                .attr("y", 100)
+                .style("font-family", "Georgia")
+                .style("font-weight", "bold")
+                .style("font-size", "12px");
+            svg.append("text")
+                .attr("id", (d) => "LeadingPartyText" ) 
+                .attr("x", 25)
+                .attr("y", 120)
+                .style("font-family", "Georgia")
+                .style("font-style", "italic")
+                .style("font-size", "12px");
+              
+            svg.append("text")
+                .attr("id", (d) => "TrailingCandidateTitleText" ) 
+                .attr("x", 20)
+                .attr("y", 160)
+                .style("font-family", "Georgia")
+                .style("font-size", "12px");
+            svg.append("text")
+                .attr("id", (d) => "TrailingCandidateText" ) 
+                .attr("x", 25)
+                .attr("y", 180)
+                .style("font-family", "Georgia")
+                .style("font-weight", "bold")
+                .style("font-size", "12px");
+            svg.append("text")
+                .attr("id", (d) => "TrailingPartyText" ) 
+                .attr("x", 25)
+                .attr("y", 200)
+                .style("font-family", "Georgia")
+                .style("font-style", "italic")
+                .style("font-size", "12px");
+
+            svg.append("text")
+                .attr("id", (d) => "MarginTitleText" ) 
+                .attr("x", 20)
+                .attr("y", 240)
+                .style("font-family", "Georgia")
+                .style("font-size", "12px");
+            svg.append("text")
+                .attr("id", (d) => "MarginText" ) 
+                .attr("x", 25)
+                .attr("y", 260)
+                .style("font-family", "Georgia")
+                .style("font-weight", "bold")
+                .style("font-size", "12px");
+
+           
+
+        }
+  );
+
+
+
+
+  String.prototype.TitleCase = function() { //https://stackoverflow.com/questions/196972/convert-string-to-title-case-with-javascript
+  var i, j, str, lowers, uppers;
+  str = this.replace(/([^\W_]+[^\s-]*) */g, function(txt) {
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
+
+  // Certain minor words should be left lowercase unless 
+  // they are the first or last words in the string
+  lowers = ['A', 'An', 'The', 'And', 'But', 'Or', 'For', 'Nor', 'As', 'At', 
+  'By', 'For', 'From', 'In', 'Into', 'Near', 'Of', 'On', 'Onto', 'To', 'With'];
+  for (i = 0, j = lowers.length; i < j; i++)
+    str = str.replace(new RegExp('\\s' + lowers[i] + '\\s', 'g'), 
+      function(txt) {
+        return txt.toLowerCase();
+      });
+
+  // Certain words such as initialisms or acronyms should be left uppercase
+  uppers = ['Id', 'Tv'];
+  for (i = 0, j = uppers.length; i < j; i++)
+    str = str.replace(new RegExp('\\b' + uppers[i] + '\\b', 'g'), 
+      uppers[i].toUpperCase());
+
+  return str;
+}
+
+function addCommas(intNum) { //http://cwestblog.com/2011/06/23/javascript-add-commas-to-numbers/
+  return (intNum + '').replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+}
+   
+</script>
+
+</body>
+</html>
