@@ -28,8 +28,8 @@ const data = d3.tsv("results.tsv");
 Promise.all([map, data]).then( 
     values => // 
         {    
-            const colorScale = d3.scaleLinear() // Color Scale for our data
-                .domain([50,10000]) // Let's make this dynamic by getting the min/max of the variable automatically.
+            const colorScale = d3.scaleLinear() 
+                .domain([50,10000]) 
                 .range(d3.schemeReds[3]);
 
             const LookupLeadingParty = {};
@@ -151,7 +151,22 @@ Promise.all([map, data]).then(
                 .style("font-weight", "bold")
                 .style("font-size", "12px");
 
-           
+                var legend = svg.append("defs").append("linearGradient").attr("id", "gradient").attr("x1", "100%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
+
+                legend.append("stop").attr("offset", "0%").attr("stop-color", colorScale(100)).attr("stop-opacity", 1);
+
+                legend.append("stop").attr("offset", "100%").attr("stop-color", colorScale(677000)).attr("stop-opacity", 1);
+
+                svg.append("rect").attr("width", 30)
+                  .attr("height", 100)
+                  .style("fill", "url(#gradient)")
+                  .attr("x", 800 - 300).attr("y", 20)
+                  .style("stroke", "black")
+
+                var axis = d3.axisRight().scale(d3.scaleLinear() 
+                .domain([100,677000]) 
+                .range([1,100]));
+                svg.append("g").attr("transform", "translate(529,19)").call(axis.ticks(5)).style("font-family", "Georgia")
 
         }
   );
