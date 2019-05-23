@@ -151,6 +151,7 @@ Promise.all([map, data]).then(
                 .style("font-weight", "bold")
                 .style("font-size", "12px");
 
+                //http://bl.ocks.org/darrenjaworski/5397362 http://www.adeveloperdiary.com/d3-js/how-to-create-interactive-charts-using-d3-js/
                 var legend = svg.append("defs").append("linearGradient").attr("id", "gradient").attr("x1", "100%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
 
                 legend.append("stop").attr("offset", "0%").attr("stop-color", colorScale(100)).attr("stop-opacity", 1);
