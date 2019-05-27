@@ -101,5 +101,6 @@ foreach ($StateCodes as $StateCode)
 }
 
 copy("results_.tsv", "results.tsv");
+unlink("results_.tsv");
 
 ?>
