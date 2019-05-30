@@ -1,6 +1,6 @@
 <?
 
-function ParseResultsPage($state_html_data)
+function ParseResultsPage($state_html_data, $StateName)
 {
     $array_of_data = explode("<tr style='font-size:12px;'><td align='left'>", $state_html_data);
 
@@ -51,9 +51,9 @@ function ParseResultsPage($state_html_data)
 
         echo "\n\n";
 
-        $line = $ConstituencyName."\t".$LeadingCandidate."\t".$LeadingParty."\t".$TrailingCandidate."\t".$TrailingParty."\t".$Margin."\t".$LeadingParty2014;
+        $line = $StateName."\t".$ConstituencyName."\t".$LeadingCandidate."\t".$LeadingParty."\t".$TrailingCandidate."\t".$TrailingParty."\t".$Margin."\t".$LeadingParty2014;
         // echo "\n\n".$line."\n";
-        if ($line!="\t\t\t\t\t\t")
+        if ($line!=$StateName."\t\t\t\t\t\t\t")
         {
             $myfile = file_put_contents('results_.tsv', $line.PHP_EOL , FILE_APPEND | LOCK_EX);
         }
@@ -65,7 +65,7 @@ function ParseResultsPage($state_html_data)
 $StateCodes = ['U011', 'S011', 'S021', 'S031', 'S041', 'U021', 'S261', 'U031', 'U041', 'S051', 'S061', 'S071', 'S081', 'S091', 'S271', 'S101', 'S111', 'U061', 'S121', 'S131', 'S141', 'S151', 'S161', 'S171', 'U051', 'S181', 'U071', 'S191', 'S201', 'S211', 'S221', 'S291', 'S231', 'S241', 'S281', 'S251'];
 
 unlink("results_.tsv");
-file_put_contents('results_.tsv', "ConstituencyName\tLeadingCandidate\tLeadingParty\tTrailingCandidate\tTrailingParty\tMargin\tLeadingParty2014".PHP_EOL , FILE_APPEND | LOCK_EX);
+file_put_contents('results_.tsv', "StateName\tConstituencyName\tLeadingCandidate\tLeadingParty\tTrailingCandidate\tTrailingParty\tMargin\tLeadingParty2014".PHP_EOL , FILE_APPEND | LOCK_EX);
 
 foreach ($StateCodes as $StateCode)
 {
@@ -73,13 +73,16 @@ foreach ($StateCodes as $StateCode)
 
     $state_html_data = file_get_contents($url, false, stream_context_create($SWITCH_OFF_SSL_VERIFICATION));
 
+    $StateName = explode("<tbody id='ElectionResult'>", $state_html_data)[1];
+    $StateName = trim(strip_tags(explode("<br>", $StateName)[0]));
+
     if (!$state_html_data)
     {
-        echo "Failed ".$StateCode."\n\n";
+        echo "Failed ".$StateName."\n\n";
     }
     else
     {
-        echo $StateCode."\n******\n\n";
+        echo $StateName."\n******\n\n";
 
         $NumberOfConstituencies = explode("<span style='color: #00ff16; font-weight: bold; font-size: 16px;'>", $state_html_data)[1];
         $NumberOfConstituencies = explode("<", $NumberOfConstituencies)[0];
@@ -94,7 +97,7 @@ foreach ($StateCodes as $StateCode)
 
             $state_html_data = file_get_contents($url, false, stream_context_create($SWITCH_OFF_SSL_VERIFICATION));
 
-            ParseResultsPage($state_html_data);
+            ParseResultsPage($state_html_data, $StateName);
             $j++;
         }
     }
